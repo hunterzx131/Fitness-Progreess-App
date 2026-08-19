@@ -1,4 +1,13 @@
 import { useState } from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 let nextId = 4;
 
@@ -17,7 +26,7 @@ function App() {
       id: 2,
       date: "2026-08-10",
       exercise: "Lat Pulldown",
-      muscleGroup: "Lats",
+      muscleGroup: "Back",
       sets: 2,
       reps: 8,
       weight: 70,
@@ -35,44 +44,53 @@ function App() {
 
   const [date, setDate] = useState("");
   const [exercise, setExercise] = useState("");
-  const [muscleGroup, setMuscleGroup] = useState ("");
+  const [muscleGroup, setMuscleGroup] = useState("Chest");
   const [sets, setSets] = useState("");
   const [reps, setReps] = useState("");
   const [weight, setWeight] = useState("");
 
-  function handleAddWorkout () {
-    if (!date || !exercise || !sets || !reps || !weight){
+  const [filter, setFilter] = useState("All");
+
+  function handleAddWorkout() {
+    if (!date || !exercise || !sets || !reps || !weight) {
       alert("Please fill in all fields");
       return;
     }
 
     const newWorkout = {
-    id: nextId++,
-    date,
-    exercise,
-    muscleGroup,
-    sets: Number(sets),
-    reps: Number(reps),
-    weight: Number(weight),
+      id: nextId++,
+      date,
+      exercise,
+      muscleGroup,
+      sets: Number(sets),
+      reps: Number(reps),
+      weight: Number(weight),
+    };
 
-  };
+    setWorkouts([...workouts, newWorkout]);
 
-  setWorkouts([...workouts, newWorkout]);
-
-  setDate("");
-  setExercise("");
-  setSets("");
-  setReps("");
-  setWeight("");
-
+    setDate("");
+    setExercise("");
+    setSets("");
+    setReps("");
+    setWeight("");
   }
 
-  function handleDeleteWorkout (id) {
+  function handleDeleteWorkout(id) {
     setWorkouts(workouts.filter((w) => w.id !== id));
   }
 
+  const filteredWorkouts =
+    filter === "All"
+      ? workouts
+      : workouts.filter((w) => w.muscleGroup === filter);
   
-
+  const chartData = [...filteredWorkouts]
+    .sort((a,b) => new Date(a.date) - new Date(b.date))
+    .map((w) => ({
+      date: w.date,
+      volume: w.sets * w.reps * w.weight,
+    }));
 
   return (
     <div className="min-h-screen w-full bg-slate-200 py-10 px-4">
@@ -133,7 +151,25 @@ function App() {
               className="border border-slate-300 rounded px-3 py-2 outline-none focus:border-blue-500"
             />
           </div>
-          
+
+          <div className="flex items-center gap-3">
+            <label className="text-sm text-slate-600">
+              Filter by muscle group:
+            </label>
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="border border-slate-300 rounded px-3 py-1.5 outline-none focus:border-blue-500"
+            >
+              <option value="All">All</option>
+              <option value="Chest">Chest</option>
+              <option value="Back">Back</option>
+              <option value="Legs">Legs</option>
+              <option value="Shoulders">Shoulders</option>
+              <option value="Arms">Arms</option>
+            </select>
+          </div>
+
           <button
             onClick={handleAddWorkout}
             className="bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-700"
@@ -142,10 +178,16 @@ function App() {
           </button>
         </div>
 
-        <div className="bg-white rounded-xl shadow p-6">
-          <h2 className="txt-lg font-semibold text-slate-700 mb-4">Workout History</h2>
+        <div className="">
 
-          {workouts.length === 0 ? (
+        </div>
+
+        <div className="bg-white rounded-xl shadow p-6">
+          <h2 className="txt-lg font-semibold text-slate-700 mb-4">
+            Workout History
+          </h2>
+
+          {filteredWorkouts.length === 0 ? (
             <p className=" text-slate-400 text-sm">No Workouts logged yet.</p>
           ) : (
             <table className="w-full text-sm text-left">
@@ -161,18 +203,21 @@ function App() {
                 </tr>
               </thead>
               <tbody>
-                {workouts.map((w) => (
+                {filteredWorkouts.map((w) => (
                   <tr key={w.id} className="border-b border-slate-100">
                     <td className="py-2 pr-2 text-slate-700">{w.date}</td>
                     <td className="py-2 pr-2 text-slate-700">{w.exercise}</td>
-                    <td className="py-2 pr-2 text-slate-700">{w.muscleGroup}</td>
+                    <td className="py-2 pr-2 text-slate-700">
+                      {w.muscleGroup}
+                    </td>
                     <td className="py-2 pr-2 text-slate-700">{w.sets}</td>
                     <td className="py-2 pr-2 text-slate-700">{w.reps}</td>
                     <td className="py-2 pr-2 text-slate-700">{w.weight}</td>
                     <td className="py-2 pr-2">
-                      <button 
+                      <button
                         onClick={() => handleDeleteWorkout(w.id)}
-                        className="text-red-500 hover:text-red-700">
+                        className="text-red-500 hover:text-red-700"
+                      >
                         Delete
                       </button>
                     </td>
@@ -180,7 +225,6 @@ function App() {
                 ))}
               </tbody>
             </table>
-          
           )}
         </div>
       </div>
