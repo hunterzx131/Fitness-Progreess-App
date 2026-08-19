@@ -178,8 +178,30 @@ function App() {
           </button>
         </div>
 
-        <div className="">
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold text-slate-700 mb-4">
+            Volume Over Time (Sets x Reps x Weight)
+          </h2>
 
+          {chartData.length === 0 ? (
+            <p className="text-slate-400 text-sm">No Data for this filter yet</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8fo"/>
+                <XAxis dataKey="date" tick={{fontSize: 12}}/>
+                <YAxis tick={{ fontSize: 12 }}/>
+                <Tooltip/>
+                <Line
+                  type="monotone"
+                  dataKey="volume"
+                  stroke="#2563eb"
+                  strokeWidth={2}
+                  dot={{r:3}}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
         <div className="bg-white rounded-xl shadow p-6">
